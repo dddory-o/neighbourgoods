@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Соседская закупка</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #f4f7f6;
+      color: #20352e;
+      font-family: Arial, sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    header {
+      background: #164b3e;
+      color: white;
+      padding: 24px;
+    }
+
+    .header-content {
+      max-width: 1050px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .logo { font-size: 24px; font-weight: bold; }
+    .subtitle { margin-top: 6px; color: #c6dfd6; font-size: 14px; }
+
+    main { max-width: 1050px; margin: auto; padding: 28px 20px; }
+
+    .banner {
+      background: #e1eee7;
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .banner h1 { margin: 8px 0; font-size: 32px; }
+    .banner p { color: #51675d; line-height: 1.6; }
+
+    .toolbar, .tabs, .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .toolbar { justify-content: space-between; margin-bottom: 24px; }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 17px;
+      background: #e6ece8;
+      color: #20352e;
+    }
+
+    button.primary, .tabs button.active {
+      background: #246b50;
+      color: white;
+    }
+
+    button.danger { background: #f8e7e5; color: #963f35; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    button:hover:not(:disabled) { filter: brightness(.96); }
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid #e9b552;
+      outline-offset: 3px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e0e7e2;
+      border-radius: 18px;
+      padding: 24px;
+    }
+
+    .card h2 { font-size: 21px; margin: 16px 0 8px; }
+    .card p { color: #62736a; line-height: 1.5; }
+    .icon { font-size: 38px; }
+    .price { font-size: 27px; font-weight: bold; margin: 20px 0; }
+    .price small { font-size: 13px; font-weight: normal; color: #62736a; }
+    .badge {
+      display: inline-block;
+      background: #edf4ee;
+      color: #37634a;
+      border-radius: 30px;
+      padding: 7px 11px;
+      font-size: 12px;
+    }
+
+    progress { width: 100%; height: 10px; accent-color: #246b50; }
+    .muted { font-size: 13px; color: #68796f; line-height: 1.6; }
+    .card > button { width: 100%; margin-top: 16px; }
+    .empty { padding: 45px; text-align: center; grid-column: 1 / -1; }
+
+    dialog {
+      border: none;
+      border-radius: 20px;
+      padding: 28px;
+      width: min(540px, 92vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      color: #20352e;
+    }
+
+    dialog::backdrop { background: #102b2266; }
+    dialog h2 { margin-top: 0; }
+    dialog p { line-height: 1.6; }
+    label.field { display: block; margin-bottom: 15px; font-size: 14px; }
+    input:not([type="checkbox"]) {
+      width: 100%;
+      padding: 12px;
+      margin-top: 7px;
+      border: 1px solid #ccd8d0;
+      border-radius: 9px;
+    }
+
+    .quantity { display: flex; align-items: center; gap: 14px; margin: 20px 0; }
+    .quantity strong { min-width: 45px; text-align: center; }
+    .details { padding: 15px; background: #f2f6f3; border-radius: 12px; }
+    .notice {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 22px;
+      border-radius: 12px;
+      background: #173f30;
+      color: white;
+      box-shadow: 0 5px 25px #0002;
+      z-index: 10;
+      max-width: 90vw;
+    }
+
+    footer { text-align: center; padding: 25px; color: #748279; font-size: 12px; }
+
+    @media (max-width: 500px) {
+      header { padding: 20px; }
+      .banner { padding: 22px; }
+      .banner h1 { font-size: 26px; }
+      dialog { padding: 22px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-content">
+      <div>
+        <div class="logo">Соседская закупка</div>
+        <div class="subtitle">Вместе покупать удобнее</div>
+      </div>
+
+      <label>
+        <input type="checkbox" id="role" onchange="render()">
+        Режим организатора
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section class="banner">
+      <span class="badge">Ваше сообщество</span>
+      <h1>ЖК «Пример»</h1>
+      <p>
+        Объединяйте заказы с соседями.<br>
+        Следите за количеством, условиями и получением товаров.
+      </p>
+      <div class="muted">
+        Интерактивный прототип · Все товары и участники вымышлены
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <div class="tabs">
+        <button id="allTab" onclick="changeTab('all')">Все закупки</button>
+        <button id="myTab" onclick="changeTab('my')">Мои заявки</button>
+      </div>
+
+      <button class="primary" id="createButton" onclick="openCreate()" hidden>
+        + Создать закупку
+      </button>
+    </div>
+
+    <div class="grid" id="cards"></div>
+  </main>
+
+  <dialog id="purchaseDialog">
+    <div id="purchaseContent"></div>
+    <div class="actions" style="margin-top:20px">
+      <button onclick="document.getElementById('purchaseDialog').close()">
+        Закрыть
+      </button>
+    </div>
+  </dialog>
+
+  <dialog id="createDialog">
+    <h2>Новая закупка</h2>
+    <p class="muted">В этом прототипе каждая закупка содержит один товар.</p>
+
+    <form id="createForm">
+      <label class="field">
+        Название закупки
+        <input name="title" required maxlength="80" placeholder="Например: Чистый дом">
+      </label>
+
+      <label class="field">
+        Товар и размер упаковки
+        <input name="product" required maxlength="120"
+               placeholder="Средство для посуды, 1 л">
+      </label>
+
+      <label class="field">
+        Цена за упаковку, ₸
+        <input name="price" type="number" min="1" max="10000000"
+               step="1" required>
+      </label>
+
+      <label class="field">
+        Минимальное количество упаковок
+        <input name="minimum" type="number" min="1" max="100000"
+               step="1" required>
+      </label>
+
+      <div class="details muted">
+        Организатор: Алия · Получение: холл ЖК «Пример».<br>
+        Оплата вне приложения. Дополнительных сборов в демо нет.<br>
+        Закрытие сбора выполняется вручную организатором.
+      </div>
+
+      <div class="actions" style="margin-top:20px">
+        <button type="button"
+          onclick="document.getElementById('createDialog').close()">Отмена</button>
+        <button class="primary" type="submit">Опубликовать</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="notice" id="notice" role="status" hidden></div>
+
+  <footer>
+    Учебный прототип · Без сервера и реальных платежей
+    <br>
+    <button onclick="resetDemo()" style="margin-top:12px">Сбросить демоданные</button>
+  </footer>
+
+  <script>
+    const storageKey = "neighbour-purchases-v1";
+
+    function initialData() {
+      return [
+        {
+          id: 1,
+          title: "Чистый дом",
+          product: "Средство для посуды, 1 л",
+          price: 900,
+          minimum: 20,
+          others: 18,
+          mine: 0,
+          status: "Сбор заявок",
+          collected: false,
+          reason: "",
+          icon: "🧴"
+        },
+        {
+          id: 2,
+          title: "Продукты для соседей",
+          product: "Рис, упаковка 1 кг",
+          price: 650,
+          minimum: 15,
+          others: 10,
+          mine: 0,
+          status: "Сбор заявок",
+          collected: false,
+          reason: "",
+          icon: "🌾"
+        },
+        {
+          id: 3,
+          title: "Забота о доме",
+          product: "Жидкое мыло, 500 мл",
+          price: 750,
+          minimum: 10,
+          others: 8,
+          mine: 0,
+          status: "Сбор заявок",
+          collected: false,
+          reason: "",
+          icon: "🧼"
+        }
+      ];
+    }
+
+    let purchases = initialData();
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      if (Array.isArray(saved) && saved.length) purchases = saved;
+    } catch {
+      // При недоступном хранилище демо работает в памяти.
+    }
+
+    let tab = "all";
+    let selectedId = null;
+    let quantity = 1;
+    let noticeTimer;
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[character]));
+    }
+
+    function money(value) {
+      return value.toLocaleString("ru-RU") + " ₸";
+    }
+
+    function organiser() {
+      return document.getElementById("role").checked;
+    }
+
+    function save() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(purchases));
+      } catch {
+        notify("Хранилище недоступно: изменения сохраняются только до перезагрузки");
+      }
+      render();
+    }
+
+    function notify(text) {
+      const box = document.getElementById("notice");
+      box.textContent = text;
+      box.hidden = false;
+      clearTimeout(noticeTimer);
+      noticeTimer = setTimeout(() => box.hidden = true, 3500);
+    }
+
+    function changeTab(value) {
+      tab = value;
+      render();
+    }
+
+    function render() {
+      document.getElementById("createButton").hidden = !organiser();
+      document.getElementById("allTab").className = tab === "all" ? "active" : "";
+      document.getElementById("myTab").className = tab === "my" ? "active" : "";
+
+      const items = purchases.filter(p => tab === "all" || p.mine > 0);
+
+      document.getElementById("cards").innerHTML = items.length
+        ? items.map(p => `
+          <article class="card">
+            <div class="icon">${escapeHtml(p.icon)}</div>
+            <h2>${escapeHtml(p.title)}</h2>
+            <p>${escapeHtml(p.product)}</p>
+            <span class="badge">${escapeHtml(p.status)}</span>
+
+            <div class="price">
+              ${money(p.price)} <small>/ упаковка</small>
+            </div>
+
+            <progress value="${Math.min(p.others + p.mine, p.minimum)}"
+                      max="${p.minimum}"></progress>
+
+            <p class="muted">
+              Собрано ${p.others + p.mine} из ${p.minimum} уп.
+              ${p.mine > 0
+                ? `<br>Ваша заявка: ${p.mine} уп. · ${money(p.mine * p.price)}`
+                : ""}
+              ${p.collected ? "<br>✓ Ваш заказ получен" : ""}
+            </p>
+
+            <button class="primary" onclick="openPurchase(${p.id})">
+              ${tab === "my" ? "Открыть заявку" : "Подробнее"}
+            </button>
+          </article>
+        `).join("")
+        : `<div class="card empty">
+             <h2>Заявок пока нет</h2>
+             <p>Выберите закупку и оформите участие.</p>
+             <button onclick="changeTab('all')">Посмотреть закупки</button>
+           </div>`;
+    }
+
+    function currentPurchase() {
+      return purchases.find(p => p.id === selectedId);
+    }
+
+    function openPurchase(id) {
+      selectedId = id;
+      quantity = currentPurchase().mine || 1;
+      drawPurchase();
+      document.getElementById("purchaseDialog").showModal();
+    }
+
+    function drawPurchase() {
+      const p = currentPurchase();
+      const open = p.status === "Сбор заявок";
+
+      let management = "";
+
+      if (organiser()) {
+        if (open) {
+          management += `<button onclick="closeCollection()">Закрыть сбор</button>`;
+        }
+
+        if (p.status === "Ожидает подтверждения") {
+          management += `<button class="primary"
+            onclick="setStatus('Подтверждена')">Подтвердить закупку</button>`;
+        }
+
+        if (p.status === "Подтверждена") {
+          management += `<button class="primary"
+            onclick="setStatus('Готова к выдаче')">Готова к выдаче</button>`;
+        }
+
+        if (p.status === "Готова к выдаче" && p.mine > 0 && !p.collected) {
+          management += `<button class="primary"
+            onclick="collectOrder()">Отметить получение моей заявки</button>`;
+        }
+
+        if (["Сбор заявок", "Ожидает подтверждения", "Подтверждена"].includes(p.status)) {
+          management += `<button class="danger"
+            onclick="cancelPurchase()">Отменить закупку</button>`;
+        }
+      }
+
+      document.getElementById("purchaseContent").innerHTML = `
+        <div class="icon">${escapeHtml(p.icon)}</div>
+        <h2>${escapeHtml(p.title)}</h2>
+        <p>${escapeHtml(p.product)}</p>
+        <span class="badge">${escapeHtml(p.status)}</span>
+        <div class="price">${money(p.price)} <small>/ упаковка</small></div>
+
+        <p>Собрано: <strong>${p.others + p.mine} / ${p.minimum} уп.</strong></p>
+
+        <div class="details">
+          <strong>Условия закупки</strong>
+          <p class="muted">
+            Организатор: Алия<br>
+            Поставщик: «Пример Опт» — вымышленные данные<br>
+            Получение: холл ЖК «Пример»<br>
+            Время получения: уточняется организатором<br>
+            Оплата: вне приложения после подтверждения закупки<br>
+            Дополнительные сборы: отсутствуют в демо
+          </p>
+          <p class="muted">
+            Заявку можно отменить до закрытия сбора.
+            При браке сообщите организатору: порядок возврата
+            согласуется по условиям поставщика.
+          </p>
+        </div>
+
+        ${p.reason ? `<p>Причина отмены: ${escapeHtml(p.reason)}</p>` : ""}
+        ${p.collected ? "<p><strong>✓ Ваш заказ получен</strong></p>" : ""}
+
+        ${open ? `
+          <div class="quantity">
+            <button aria-label="Уменьшить количество"
+                    onclick="changeQuantity(-1)" ${quantity <= 1 ? "disabled" : ""}>−</button>
+            <strong>${quantity}</strong>
+            <button aria-label="Увеличить количество"
+                    onclick="changeQuantity(1)" ${quantity >= 999 ? "disabled" : ""}>+</button>
+            <span>упаковок</span>
+          </div>
+
+          <h3>Итого: ${money(quantity * p.price)}</h3>
+
+          <div class="actions">
+            <button class="primary" onclick="submitOrder()">
+              ${p.mine ? "Сохранить изменения" : "Оформить заявку"}
+            </button>
+            ${p.mine ? `<button class="danger"
+              onclick="cancelOrder()">Отменить мою заявку</button>` : ""}
+          </div>
+        ` : "<p class='muted'>Сбор закрыт. Изменение заявки недоступно.</p>"}
+
+        ${organiser() ? `
+          <hr style="border:0;border-top:1px solid #ddd;margin:24px 0">
+          <h3>Управление закупкой</h3>
+          <p class="muted">
+            Остальные участники: ${p.others} уп.<br>
+            Моя заявка: ${p.mine} уп.<br>
+            Это демонстрационные количества, без реальных аккаунтов.
+          </p>
+          <div class="actions">${management || "Доступных действий нет"}</div>
+        ` : ""}
+      `;
+    }
+
+    function changeQuantity(amount) {
+      quantity = Math.max(1, Math.min(999, quantity + amount));
+      drawPurchase();
+    }
+
+    function submitOrder() {
+      const p = currentPurchase();
+      if (p.status !== "Сбор заявок") return;
+
+      if (!confirm(
+        `Подтвердить ${quantity} уп. на сумму ${money(quantity * p.price)}?\n` +
+        "Оплата вне приложения. Дополнительных сборов в демо нет."
+      )) return;
+
+      p.mine = quantity;
+      save();
+      drawPurchase();
+      notify("Заявка сохранена");
+    }
+
+    function cancelOrder() {
+      const p = currentPurchase();
+      if (p.status !== "Сбор заявок") return;
+      if (!confirm("Отменить вашу заявку?")) return;
+
+      p.mine = 0;
+      quantity = 1;
+      save();
+      drawPurchase();
+      notify("Заявка отменена");
+    }
+
+    function closeCollection() {
+      if (!organiser()) return;
+      const p = currentPurchase();
+      if (p.status !== "Сбор заявок") return;
+      if (!confirm("Закрыть сбор? После этого заявки нельзя менять.")) return;
+
+      p.status = p.others + p.mine >= p.minimum
+        ? "Ожидает подтверждения"
+        : "Не состоялась";
+
+      save();
+      drawPurchase();
+      notify("Сбор закрыт");
+    }
+
+    function setStatus(status) {
+      if (!organiser()) return;
+      const p = currentPurchase();
+
+      const valid =
+        (p.status === "Ожидает подтверждения" && status === "Подтверждена") ||
+        (p.status === "Подтверждена" && status === "Готова к выдаче");
+
+      if (!valid) return;
+      p.status = status;
+      save();
+      drawPurchase();
+      notify("Статус обновлён");
+    }
+
+    function collectOrder() {
+      const p = currentPurchase();
+      if (!organiser() || p.status !== "Готова к выдаче" || p.mine <= 0) return;
+
+      p.collected = true;
+      save();
+      drawPurchase();
+      notify("Получение отмечено");
+    }
+
+    function cancelPurchase() {
+      if (!organiser()) return;
+      const p = currentPurchase();
+      if (!["Сбор заявок", "Ожидает подтверждения", "Подтверждена"].includes(p.status)) return;
+
+      const reason = prompt("Укажите причину отмены:");
+      if (!reason || !reason.trim()) return;
+
+      p.reason = reason.trim();
+      p.status = "Отменена";
+      save();
+      drawPurchase();
+      notify("Закупка отменена");
+    }
+
+    function openCreate() {
+      if (!organiser()) return;
+      document.getElementById("createForm").reset();
+      document.getElementById("createDialog").showModal();
+    }
+
+    document.getElementById("createForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      if (!organiser() || !this.reportValidity()) return;
+
+      const form = new FormData(this);
+      const title = form.get("title").trim();
+      const product = form.get("product").trim();
+      const price = Number(form.get("price"));
+      const minimum = Number(form.get("minimum"));
+
+      if (!title || !product ||
+          !Number.isInteger(price) || price <= 0 ||
+          !Number.isInteger(minimum) || minimum <= 0) {
+        notify("Проверьте названия, цену и количество");
+        return;
+      }
+
+      purchases.push({
+        id: Date.now(),
+        title,
+        product,
+        price,
+        minimum,
+        others: 0,
+        mine: 0,
+        status: "Сбор заявок",
+        collected: false,
+        reason: "",
+        icon: "📦"
+      });
+
+      tab = "all";
+      save();
+      document.getElementById("createDialog").close();
+      notify("Закупка опубликована");
+    });
+
+    function resetDemo() {
+      if (!confirm("Удалить изменения и восстановить начальные закупки?")) return;
+      purchases = initialData();
+      tab = "all";
+      save();
+      notify("Демоданные восстановлены");
+    }
+
+    render();
+  </script>
+</body>
+</html>
