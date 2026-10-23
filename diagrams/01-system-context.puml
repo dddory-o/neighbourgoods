@@ -1,0 +1,15 @@
+@startuml 01-system-context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(resident, "Resident", "Joins community, browses purchases, places and cancels orders.")
+Person(organizer, "Community Organizer", "Creates community, manages suppliers, creates purchases, and updates collection statuses.")
+
+System(system, "Group Procurement Platform", "Distributed platform consolidating demand and managing group purchases of essential goods.")
+
+System_Ext(supplier, "Suppliers", "External suppliers providing goods and conditions (interact offline/outside the platform).")
+
+Rel(resident, system, "Browses, submits requests, tracks orders", "Mobile App / HTTPS")
+Rel(organizer, system, "Manages purchases, users, and collection details", "Mobile App / HTTPS")
+Rel(organizer, supplier, "Agrees on terms, quantities, and prices offline", "Phone / Messaging")
+
+@enduml

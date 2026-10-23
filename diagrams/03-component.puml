@@ -1,0 +1,41 @@
+@startuml 03-component
+package "Backend Application (Node.js)" {
+  [API Gateway / Router] as Router
+  [Auth Service] as Auth
+  [Community Service] as Community
+  [Purchase Management Service] as Purchase
+  [Order Aggregation Service] as Order
+  [Access Control (RBAC)] as RBAC
+}
+
+package "Mobile Application (Flutter)" {
+  [UI Screens & Navigation] as UI
+  [State Management] as State
+  [HTTP API Client] as APIClient
+}
+
+database "PostgreSQL" {
+  [Users & Roles]
+  [Communities]
+  [Purchases & Goods]
+  [Orders & Statuses]
+}
+
+UI --> State
+State --> APIClient
+APIClient --> Router : REST / JSON
+
+Router --> Auth
+Router --> Community
+Router --> Purchase
+Router --> Order
+
+Auth ..> RBAC
+Purchase ..> RBAC
+
+Community --> [Communities]
+Purchase --> [Purchases & Goods]
+Order --> [Orders & Statuses]
+Auth --> [Users & Roles]
+
+@enduml

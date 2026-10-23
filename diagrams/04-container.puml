@@ -1,0 +1,16 @@
+@startuml 04-container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "Resident or Community Organizer")
+
+System_Boundary(platform, "Group Procurement Platform") {
+    Container(mobile_app, "Mobile Application", "Flutter, Dart", "Provides user interface for catalog, ordering, and status tracking.")
+    Container(backend_api, "Backend Application", "Node.js, Express/NestJS", "Handles business logic, aggregation, deadlines, and RBAC authorization.")
+    ContainerDb(database, "Database", "PostgreSQL", "Stores user profiles, communities, purchase offers, aggregate quantities, and order states.")
+}
+
+Rel(user, mobile_app, "Uses", "HTTPS")
+Rel(mobile_app, backend_api, "API Calls", "JSON / HTTPS")
+Rel(backend_api, database, "Reads/Writes", "SQL / TCP")
+
+@enduml
